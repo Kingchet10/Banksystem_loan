@@ -4,7 +4,9 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
-import java.util.Date;
+
+import java.time.LocalDate;
+
 
 @TableName("loan")
 public class Loan {
@@ -34,15 +36,17 @@ public class Loan {
     private LoanStatus status;
 
     @TableField("date_applied")
-    private Date date_applied;
+    private LocalDate date_applied;
 
     @TableField("date_approved")
-    private Date date_approved;
+    private LocalDate date_approved;
+
 
     @TableField("form_id")
     private int form_id;
 
     // Getters and Setters
+
 
     public int getLoan_id() {
         return loan_id;
@@ -108,19 +112,27 @@ public class Loan {
         this.status = status;
     }
 
-    public Date getDate_applied() {
+    public void setStatus(int type) {
+        if(type==0) this.status=LoanStatus.application;
+        else if(type==1) this.status=LoanStatus.declined;
+        else if(type==2) this.status=LoanStatus.repayment;
+        else if(type==3) this.status=LoanStatus.settled;
+        else if(type==4) this.status=LoanStatus.overdue;
+        else this.status=null;
+    }
+    public LocalDate getDate_applied() {
         return date_applied;
     }
 
-    public void setDate_applied(Date date_applied) {
+    public void setDate_applied(LocalDate date_applied) {
         this.date_applied = date_applied;
     }
 
-    public Date getDate_approved() {
+    public LocalDate getDate_approved() {
         return date_approved;
     }
 
-    public void setDate_approved(Date date_approved) {
+    public void setDate_approved(LocalDate date_approved) {
         this.date_approved = date_approved;
     }
 
@@ -131,12 +143,29 @@ public class Loan {
     public void setForm_id(int form_id) {
         this.form_id = form_id;
     }
+
+    @Override
+    public String toString() {
+        return "Loan{" +
+                "loan_id=" + loan_id +
+                ", borrow_id=" + borrow_id +
+                ", card_id=" + card_id +
+                ", officer_id=" + officer_id +
+                ", amount=" + amount +
+                ", rate=" + rate +
+                ", term=" + term +
+                ", status=" + status +
+                ", date_applied=" + date_applied +
+                ", date_approved=" + date_approved +
+                ", form_id=" + form_id +
+                '}';
+    }
 }
 
 enum LoanStatus {
-    APPLICATION,
-    DECLINED,
-    REPAYMENT,
-    SETTLED,
-    OVERDUE
+    application,
+    declined,
+    repayment,
+    settled,
+    overdue
 }

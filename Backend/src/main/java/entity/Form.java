@@ -144,12 +144,11 @@ public class Form {
 }
 
 enum Gender {
-    MALE,
-    FEMALE
+    male,
+    female
 }
 
 enum Emotion {
-    SINGLE,
-    MARRIED,
-    DIVORCED
+    single,
+    married
 }
