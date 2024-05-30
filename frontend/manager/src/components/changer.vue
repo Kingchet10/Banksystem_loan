@@ -13,19 +13,29 @@
                 </template>
             </el-table-column>
         </el-table>
+        <el-pagination background
+                       layout="prev, pager, next, total"
+                       :total="totalOfficers"
+                       :page-size="pageSize"
+                       @current-change="handlePageChange"
+                       :current-page="currentPage">
+        </el-pagination>
     </div>
 </template>
 
 <script>
-    import { ElTable, ElTableColumn, ElButton, ElMessageBox, ElMessage } from 'element-plus';
+    import { ElTable, ElTableColumn, ElButton, ElMessageBox, ElMessage, ElPagination } from 'element-plus';
 
     export default {
         components: {
-            ElTable, ElTableColumn, ElButton, ElMessageBox, ElMessage
+            ElTable, ElTableColumn, ElButton, ElMessageBox, ElMessage, ElPagination
         },
         data() {
             return {
-                officersData: [] 
+                officersData: [],
+                totalOfficers: 0,
+                pageSize: 10,
+                currentPage: 1
             };
         },
         mounted() {
@@ -34,11 +44,19 @@
         methods: {
             async fetchOfficers() {
                 try {
-                    const response = await this.$axios.get('/get-officers');
-                    this.officersData = response.data;
+                    const response = await this.$axios.get('/get-officers', {
+                        params: {
+                            page: this.currentPage,
+                            pageSize: this.pageSize
+                        }
+                    });
+                    this.officersData = response.data.records;
+                    this.totalOfficers = response.data.total;
+                    // Log the total number of officers
+                    console.log('Total Officers:', this.totalOfficers, this.officersData);
                 } catch (error) {
                     console.error('获取审查员数据时发生错误:', error);
-                    this.$message.error('无法加载审查员数据。');
+                    ElMessage.error('无法加载审查员数据。');
                 }
             },
             async deleteOfficer(id) {
@@ -49,14 +67,18 @@
                         type: 'warning'
                     });
                     await this.$axios.delete(`/delete-officer/${id}`);
-                    this.officersData = this.officersData.filter(officer => officer.officer_id !== id);
-                    this.$message.success('删除成功！');
+                    this.fetchOfficers();
+                    ElMessage.success('删除成功！');
                 } catch (error) {
                     if (error !== 'cancel') {
                         console.error('删除审查员时发生错误:', error);
-                        this.$message.error('删除失败。');
+                        ElMessage.error('删除失败。');
                     }
                 }
+            },
+            handlePageChange(page) {
+                this.currentPage = page;
+                this.fetchOfficers();
             }
         }
     };

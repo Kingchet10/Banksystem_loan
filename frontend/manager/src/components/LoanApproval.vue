@@ -1,6 +1,6 @@
 <template>
     <div class="page-container">
-        <el-form ref="adminForm" :model="adminData" label-position="top" @submit.native.prevent="submitForm">
+        <el-form ref="adminForm" :model="adminData" :rules="rules" label-position="top" @submit.native.prevent="submitForm">
             <el-form-item label="审查员姓名" prop="officer_name">
                 <el-input v-model="adminData.officer_name" placeholder="请输入审查员姓名" />
             </el-form-item>
@@ -42,18 +42,42 @@
                     password: '',
                     permissions: '',
                     manager_id: 1 // 假设manager_id为固定值或从其他地方获取
+                },
+                rules: {
+                    officer_name: [
+                        { required: true, message: '请输入审查员姓名', trigger: 'blur' }
+                    ],
+                    phone_number: [
+                        { required: true, message: '请输入电话号码', trigger: 'blur' }
+                    ],
+                    username: [
+                        { required: true, message: '请输入账户名', trigger: 'blur' }
+                    ],
+                    password: [
+                        { required: true, message: '请输入账户密码', trigger: 'blur' }
+                    ],
+                    permissions: [
+                        { required: true, message: '请选择权限', trigger: 'change' }
+                    ]
                 }
             };
         },
         methods: {
             async submitForm() {
-                try {
-                    const response = await this.$axios.post('/add-officer', this.adminData);
-                    this.$message.success('管理员添加成功！');
-                } catch (error) {
-                    console.error('添加管理员时发生错误:', error);
-                    this.$message.error('添加失败。');
-                }
+                this.$refs.adminForm.validate(async (valid) => {
+                    if (valid) {
+                        try {
+                            const response = await this.$axios.post('/add-officer', this.adminData);
+                            this.$message.success('管理员添加成功！');
+                        } catch (error) {
+                            console.error('添加管理员时发生错误:', error);
+                            this.$message.error('添加失败。');
+                        }
+                    } else {
+                        this.$message.error('请完整填写表单');
+                        return false;
+                    }
+                });
             }
         }
     };

@@ -1,13 +1,20 @@
 package com.example.loan.controller;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.loan.mapper.OfficerMapper;
 import entity.Officer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 @RestController
@@ -36,7 +43,7 @@ public class OfficerController {
         if (result > 0) {
             return "Password updated successfully!";
         } else {
-            return "Failed to update password.";
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Officer not found");
         }
     }
 
@@ -49,14 +56,14 @@ public class OfficerController {
         if (result > 0) {
             return "Permission updated successfully!";
         } else {
-            return "Failed to update permission.";
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Officer not found");
         }
     }
 
     @GetMapping("/get-officers")
-    public List<Officer> getAllOfficers() {
-        List<Officer> officers = officerMapper.selectList(null);
-        return officers;
+    public IPage getOfficers(@RequestParam int page, @RequestParam int pageSize) {
+        Page<Officer> officerPage = new Page<>(page, pageSize);
+        return officerMapper.selectPage(officerPage, null);
     }
 
 
