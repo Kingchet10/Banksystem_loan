@@ -8,12 +8,26 @@
         <el-table-column prop="date_applied" label="贷款时间" width="180"></el-table-column>
         <el-table-column label="操作" width="450">
           <template #default="scope">
-            <el-button type="primary" size="small" @click="viewLoanDetails(scope.row)" class="view-button">查看详情</el-button>
+            <el-button type="primary" size="small" @click="viewLoanDetails(scope.row.loan_id)" class="view-button">查看详情</el-button>
             <el-button type="success" size="small" @click="openApprovalDialog(scope.row)" class="approve-button">审批</el-button>
-            <el-button type="info" size="small" @click="viewCreditReport(scope.row)" class="credit-button">查看征信</el-button>
+            <el-button type="info" size="small" @click="viewCreditReport(scope.row.loan_id)" class="credit-button">查看征信</el-button>
           </template>
         </el-table-column>
       </el-table>
+      <el-pagination background
+                     layout="prev, pager, next, total"
+                     :total="totalLoans"
+                     :page-size="pageSize"
+                     @current-change="handlePageChange"
+                     :current-page="currentPage">
+      </el-pagination>
+      <el-pagination background
+                     layout="prev, pager, next, total"
+                     :total="totalloans"
+                     :page-size="pageSize"
+                     @current-change="handlePageChange"
+                     :current-page="currentPage">
+      </el-pagination>
     </div>
     <el-dialog v-model="dialogVisible" title="贷款详情" width="600px" :modal-append-to-body="false">
       <div class="dialog-content">
@@ -118,6 +132,7 @@ export default {
   components: {
     ElTable, ElTableColumn, ElDialog, ElButton, ElForm, ElFormItem, ElInput, ElRow, ElCol, ElDatePicker, ElSelect, ElOption, ElMessage
   },
+
   setup() {
     const loans = ref([
       { loan_id: 1, borrow_id: 101, card_id: 1001, officer_id: 201, amount: 50000, rate: 3.5, term: 36, status: 'application', date_applied: '2023-01-01', date_approved: '2023-01-05', form_id: 301, name: '张三', idNumber: '123456789012345678', dob: '1990-01-01', gender: 'male', maritalStatus: 'married', occupation: '工程师', annualIncome: '100000', residentialAddress: '北京市朝阳区', phoneNumber: '12345678901', email: 'zhangsan@example.com', educationBackground: '本科', loanPurpose: '购房', loanAmount: '500000', loanTerm: '36', personalStatement: '无' },
@@ -151,18 +166,6 @@ export default {
       creditDialogVisible.value = true;
     };
 
-    const approveLoan = () => {
-      selectedLoan.value.status = 'approved';
-      ElMessage.success('贷款申请已同意');
-      approvalDialogVisible.value = false;
-    };
-
-    const rejectLoan = () => {
-      selectedLoan.value.status = 'declined';
-      ElMessage.error('贷款申请已拒绝');
-      approvalDialogVisible.value = false;
-    };
-
     return {
       loans,
       dialogVisible,
@@ -173,10 +176,79 @@ export default {
       viewLoanDetails,
       openApprovalDialog,
       viewCreditReport,
-      approveLoan,
-      rejectLoan
     };
-  }
+  },
+
+  data() {
+    return {
+      loansData: [],
+      totalLoans: 0,
+      pageSize: 10,
+      currentPage: 1
+    };
+  },
+  mounted() {
+    this.fetchloans();
+  },
+  methods: {
+    async fetchloans() {
+      try {
+        const loanResponse = await this.$axios.get('/get-loans', {
+          params: {
+            page: this.currentPage,
+            pageSize: this.pageSize
+          }
+        });
+        const formResponse = await this.$axios.get(`/get-forms/${loanResponse.records.form_id}`);
+        this.loans = loanResponse.data.records + formResponse.data.records;
+        this.totalLoans = loanResponse.data.total;
+        // Log the total number of loans
+        console.log('Total Loans:', this.totalLoans, this.loansData);
+      } catch (error) {
+        console.error('获取贷款申请时发生错误:', error);
+        ElMessage.error('无法加载贷款申请。');
+      }
+    },
+    async approveLoan(id) {
+      try{
+        const response = await this.$axios.put(`/approve-loan/${id}`);
+        this.fetchloans();
+        ElMessage.success('贷款申请已同意。');
+      }catch (error) {
+        if (error !== 'cancel') {
+          console.error('审批时发生错误:', error);
+          ElMessage.error('审批失败。');
+        }
+      }
+    },
+    async rejectLoan(id){
+      try{
+        const response = await this.$axios.put(`/reject-loan/${id}`);
+        this.fetchloans();
+        ElMessage.success('贷款申请已拒绝。');
+      } catch (error) {
+        if(error !== 'cancel'){
+          console.error('审批时发生错误:',error);
+          ElMessage.error(('审批失败。'));
+        }
+      }
+    },
+    async viewLoanDetails(id) {
+      try {
+        const response = await this.$axios.get(`/get-detailed-loan/${id}`);
+        dialogVisible.value = true;
+      }catch (error) {
+
+      }
+    },
+    async viewCreditReport(){
+
+    },
+    handlePageChange(page) {
+      this.currentPage = page;
+      this.fetchOfficers();
+    }
+  },
 };
 </script>
 

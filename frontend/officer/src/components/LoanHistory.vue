@@ -12,6 +12,13 @@
           </template>
         </el-table-column>
       </el-table>
+      <el-pagination background
+                     layout="prev, pager, next, total"
+                     :total="totalApprovals"
+                     :page-size="pageSize"
+                     @current-change="handlePageChange"
+                     :current-page="currentPage">
+      </el-pagination>
     </div>
     <el-dialog v-model="dialogVisible" title="审批详情" width="600px" :modal-append-to-body="false">
       <div class="dialog-content">
@@ -67,11 +74,7 @@ export default {
     ElTable, ElTableColumn, ElDialog, ElButton, ElForm, ElFormItem, ElInput
   },
   setup() {
-    const approvals = ref([
-      { loan_id: 1, borrow_id: 101, card_id: 1001, officer_id: 201, amount: 50000, rate: 3.5, term: 36, status: 'application', date_applied: '2023-01-01', date_approved: '2023-01-05', form_id: 301 },
-      { loan_id: 2, borrow_id: 102, card_id: 1002, officer_id: 202, amount: 75000, rate: 4.0, term: 48, status: 'repayment', date_applied: '2023-02-15', date_approved: '2023-02-20', form_id: 302 },
-      { loan_id: 3, borrow_id: 103, card_id: 1003, officer_id: 203, amount: 30000, rate: 2.8, term: 24, status: 'settled', date_applied: '2023-03-10', date_approved: '2023-03-15', form_id: 303 }
-    ]);
+    const approvals = ref([]);
 
     const dialogVisible = ref(false);
     const selectedApproval = ref({});
@@ -87,6 +90,40 @@ export default {
       selectedApproval,
       viewApprovalDetails
     };
+  },
+  data() {
+    return {
+      approvalHistory: [],
+      totalApprovals: 0,
+      pageSize: 10,
+      currentPage: 1
+    };
+  },
+  mounted() {
+    this.fetchApprovals();
+  },
+  methods: {
+    async fetchApprovals() {
+      try {
+        const response = await this.$axios.get('/get-approvals', {
+          params: {
+            page: this.currentPage,
+            pageSize: this.pageSize
+          }
+        });
+        this.approvals = response.data.records;
+        this.totalApprovals = response.data.total;
+        // Log the total number of approvals
+        console.log('Total Approvals:', this.totalApprovals, this.approvalHistory);
+      } catch (error) {
+        console.error('获取审批历史时发生错误:', error);
+        ElMessage.error('无法加载审批历史。');
+      }
+    },
+    handlePageChange(page) {
+      this.currentPage = page;
+      this.fetchOfficers();
+    }
   }
 };
 </script>

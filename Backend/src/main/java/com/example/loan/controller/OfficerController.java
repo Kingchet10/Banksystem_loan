@@ -76,5 +76,19 @@ public class OfficerController {
             return "Failed to delete officer.";
         }
     }
+
+    @PutMapping("/update-officer-password-by-officer")
+    public String updateOfficerPasswordByOfficer(@RequestParam String currentPassword, @RequestParam String newPassword) {
+        UpdateWrapper<Officer> updateWrapper = new UpdateWrapper<>();
+        //updateWrapper.and(wrapper->wrapper.eq("officer_id",/*id_from_token*/).eq("Password", currentPassword)).set("password", newPassword);
+        updateWrapper.eq("Password", currentPassword).set("password", newPassword);
+
+        int result = officerMapper.update(null, updateWrapper);
+        if (result > 0) {
+            return "Password updated successfully!";
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Current password is not correct");
+        }
+    }
 }
 

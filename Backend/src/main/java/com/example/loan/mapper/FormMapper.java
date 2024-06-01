@@ -2,9 +2,7 @@ package com.example.loan.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import entity.Form;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Options;
+import org.apache.ibatis.annotations.*;
 
 @Mapper
 public interface FormMapper extends BaseMapper<Form> {

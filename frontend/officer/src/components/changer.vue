@@ -1,11 +1,11 @@
 <template>
     <div class="change-password-page">
-      <el-form :model="passwordForm" label-width="120px" class="password-form">
-        <el-form-item label="当前密码">
-          <el-input v-model="passwordForm.currentPassword" type="password" placeholder="请输入当前密码"></el-input>
+      <el-form ref="passwordForm" :model="passwordData" :rules="rules" label-position="top" @submit.native.prevent="changePassword">
+        <el-form-item label="当前密码" prop="currentPassword">
+          <el-input v-model="passwordData.currentPassword" type="password" placeholder="请输入当前密码" />
         </el-form-item>
-        <el-form-item label="新密码">
-          <el-input v-model="passwordForm.newPassword" type="password" placeholder="请输入新密码"></el-input>
+        <el-form-item label="新密码" prop="newPassword">
+          <el-input v-model="passwordData.newPassword" type="password" placeholder="请输入新密码" />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="changePassword">修改密码</el-button>
@@ -15,37 +15,49 @@
   </template>
   
   <script>
-  import { ref } from 'vue';
   import { ElForm, ElFormItem, ElInput, ElButton, ElMessage } from 'element-plus';
-  
+
   export default {
     components: {
       ElForm, ElFormItem, ElInput, ElButton, ElMessage
     },
-    setup() {
-      const passwordForm = ref({
-        currentPassword: '',
-        newPassword: ''
-      });
-  
-      const changePassword = () => {
-        // 模拟验证当前密码并修改密码的逻辑
-        const isCurrentPasswordCorrect = passwordForm.value.currentPassword === 'correct-password';
-        if (!isCurrentPasswordCorrect) {
-          ElMessage.error('当前密码错误');
-          return;
-        }
-        
-        // 模拟修改密码成功
-        ElMessage.success('密码修改成功');
-        passwordForm.value.currentPassword = '';
-        passwordForm.value.newPassword = '';
-      };
-  
+    data() {
       return {
-        passwordForm,
-        changePassword
+        passwordData: {
+          currentPassword: '',
+          newPassword: ''
+        },
+        rules: {
+          currentPassword: [
+            { required: true, message: '请输入旧密码', trigger: 'blur' }
+          ],
+          newPassword: [
+            { required: true, message: '请输入新密码', trigger: 'blur' }
+          ]
+        }
       };
+    },
+    methods: {
+      async changePassword() {
+        this.$refs.passwordForm.validate(async (valid) => {
+          if (valid) {
+            try {
+              const response = await this.$axios.put('/update-officer-password-by-officer', null, { params: this.passwordData });
+              this.$message.success('密码修改成功！');
+            } catch (error) {
+              console.error('修改密码时发生错误:', error);
+              if (error.response && error.response.status === 404) {
+                this.$message.error('旧密码错误。');
+              } else {
+                this.$message.error('修改失败。');
+              }
+            }
+          } else {
+            this.$message.error('请完整填写表单');
+            return false;
+          }
+        });
+      }
     }
   };
   </script>

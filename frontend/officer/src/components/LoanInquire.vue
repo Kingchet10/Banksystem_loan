@@ -5,7 +5,7 @@
           <el-input v-model="searchForm.idNumber" placeholder="请输入身份证号"></el-input>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="searchLoans">查询</el-button>
+          <el-button type="primary" @click="searchLoans(searchForm.idNumber)">查询</el-button>
         </el-form-item>
       </el-form>
       <div class="loan-list-container" v-if="loans.length > 0">
@@ -58,6 +58,36 @@
         loans,
         searchLoans
       };
+    },
+    data() {
+      return {
+        loanHistory: [],
+        totalLoans: 0,
+        pageSize: 10,
+        currentPage: 1
+      };
+    },
+    methods:{
+      async searchLoans(id_number){
+        try {
+          const response = await this.$axios.get(`/search-forms/${id_number}`, {
+            params: {
+              page: this.currentPage,
+              pageSize: this.pageSize
+            }
+          });
+          this.loanHistory = response.data.records;
+          this.totalLoans = response.data.total;
+          // Log the total number of loans
+          console.log('Total Loans:', this.totalApprovals, this.loanHistory);
+          if(this.totalLoans == 0){  //0输出
+            ElMessage.error('没有找到相关贷款记录');
+          }
+        } catch (error) {
+          console.error('获取用户贷款历史时发生错误:', error);
+          ElMessage.error('无法加载用户贷款历史。');
+        }
+      }
     }
   };
   </script>
