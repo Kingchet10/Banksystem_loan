@@ -1,7 +1,7 @@
 <template>
     <div class="page-container">
         <div class="submit-button-container">
-            <el-button type="primary" @click="submitForm">提交（Submit）</el-button>
+            <el-button type="primary" @click="submitForm">提交(Submit)</el-button>
         </div>
         <div class="loan-application-form">
             <el-form ref="loan_form" :model="loan_data" :rules="rules" label-position="top">
@@ -84,7 +84,7 @@
                     },
                     amount: '',
                     term: '',
-                    officer_id: 4 //这里需要算法实现随机分给符合权限的officer！！！
+                    officer_id: '' //这里需要算法实现随机分给符合权限的officer！！！
                     //borrow_id也还未实现
                 },
                 rules: {
