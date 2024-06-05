@@ -45,7 +45,9 @@ public class Loan {
     @TableField("form_id")
     private int form_id;
 
+    private String statusstring;
     // Getters and Setters
+
 
 
     public int getLoan_id() {
@@ -60,8 +62,8 @@ public class Loan {
         return borrow_id;
     }
 
-    public void setBorrow_id(int borrow_id) {
-        this.borrow_id = borrow_id;
+    public void setBorrow_id(int borrower_id) {
+        this.borrow_id = borrower_id;
     }
 
     public int getCard_id() {
@@ -119,6 +121,17 @@ public class Loan {
         else if(type==3) this.status=LoanStatus.settled;
         else if(type==4) this.status=LoanStatus.overdue;
         else this.status=null;
+    }
+    public void setStatusstring() {
+        if(status==LoanStatus.application) this.statusstring="待审批";
+        else if(status==LoanStatus.declined) this.statusstring="申请失败";
+        else if(status==LoanStatus.repayment) this.statusstring="待还款";
+        else if(status==LoanStatus.settled) this.statusstring="已还款";
+        else if(status==LoanStatus.overdue) this.statusstring="已逾期";
+        else this.statusstring=null;
+    }
+    public String getStatusstring(){
+        return statusstring;
     }
     public LocalDate getDate_applied() {
         return date_applied;
