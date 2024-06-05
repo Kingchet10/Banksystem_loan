@@ -10,13 +10,30 @@ import axios from 'axios'
 
 const app = createApp(App)
 
-// 设置 Axios 基础 URL
 axios.defaults.baseURL = 'http://localhost:8080';
+axios.interceptors.request.use(config => {
+    const token = localStorage.getItem('token');
+    if (token) {
+        config.headers['Authorization'] = `Bearer ${token}`;
+    }
+    return config;
+}, error => {
+    return Promise.reject(error);
+});
 
-// 添加 Axios 到 Vue 实例的全局属性中
+// 添加响应拦截器，处理 token 过期的情况
+axios.interceptors.response.use(response => {
+    return response;
+}, error => {
+    if (error.response.status === 401) {
+        console.error('Token 过期或未授权');
+        localStorage.removeItem('token');
+        router.push('/login'); 
+    }
+    return Promise.reject(error);
+});
+
 app.config.globalProperties.$axios = axios
-
-// 注册 ElementPlus 图标组件
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
     app.component(key, component)
 }

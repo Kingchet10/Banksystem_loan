@@ -1,12 +1,7 @@
 package com.example.loan.controller;
 
 
-import com.example.loan.mapper.ManagerMapper;
-import entity.Manager;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @CrossOrigin
