@@ -1,96 +1,126 @@
 <template>
-    <div class="user-loan-history-page">
-      <el-form :model="searchForm" label-width="120px" class="search-form">
-        <el-form-item label="身份证号">
-          <el-input v-model="searchForm.idNumber" placeholder="请输入身份证号"></el-input>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="searchLoans(searchForm.idNumber)">查询</el-button>
-        </el-form-item>
-      </el-form>
-      <div class="loan-list-container" v-if="loans.length > 0">
-        <el-table :data="loans" style="width: 100%" class="loan-table" header-align="center" align="center">
-          <el-table-column prop="loan_id" label="贷款编号" width="180"></el-table-column>
-          <el-table-column prop="borrow_id" label="借款人编号" width="180"></el-table-column>
-          <el-table-column prop="card_id" label="转入卡编号" width="180"></el-table-column>
-          <el-table-column prop="officer_id" label="审查员编号" width="180"></el-table-column>
-          <el-table-column prop="amount" label="贷款金额" width="180"></el-table-column>
-          <el-table-column prop="rate" label="贷款利率" width="180"></el-table-column>
-          <el-table-column prop="term" label="贷款期限" width="180"></el-table-column>
-          <el-table-column prop="status" label="贷款状态" width="180"></el-table-column>
-          <el-table-column prop="date_applied" label="申请日期" width="180"></el-table-column>
-          <el-table-column prop="date_approved" label="审批日期" width="180"></el-table-column>
-          <el-table-column prop="form_id" label="表单编号" width="180"></el-table-column>
-        </el-table>
-      </div>
+  <div class="user-loan-history-page">
+    <el-form :model="searchForm" label-width="120px" class="search-form">
+      <el-form-item label="身份证号">
+        <el-input v-model="searchForm.id_number" placeholder="请输入身份证号"></el-input>
+      </el-form-item>
+      <el-form-item>
+        <el-button type="primary" @click="searchLoans">查询</el-button>
+      </el-form-item>
+    </el-form>
+    <div class="loan-list-container" v-if="loans.length > 0">
+      <el-table :data="loans" style="width: 100%" class="loan-table" header-align="center" align="center">
+        <el-table-column prop="loan_id" label="贷款编号" width="180"></el-table-column>
+        <el-table-column prop="borrow_id" label="借款人编号" width="180"></el-table-column>
+        <el-table-column prop="card_id" label="转入卡编号" width="180"></el-table-column>
+        <el-table-column prop="officer_id" label="审查员编号" width="180"></el-table-column>
+        <el-table-column prop="amount" label="贷款金额" width="180"></el-table-column>
+        <el-table-column prop="rate" label="贷款利率" width="180"></el-table-column>
+        <el-table-column prop="term" label="贷款期限" width="180"></el-table-column>
+        <el-table-column label="贷款状态" width="180">
+          <template v-slot="scope">
+            <span>{{ getStatusText(scope.row.status) }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="date_applied" label="申请日期" width="180"></el-table-column>
+        <el-table-column prop="date_approved" label="审批日期" width="180"></el-table-column>
+        <el-table-column prop="form_id" label="表单编号" width="180"></el-table-column>
+      </el-table>
+      <el-pagination background
+                     layout="prev, pager, next, total"
+                     :total="totalLoans"
+                     :page-size="pageSize"
+                     @current-change="handlePageChange"
+                     :current-page="currentPage">
+      </el-pagination>
     </div>
-  </template>
-  
-  <script>
-  import { ref } from 'vue';
-  import { ElTable, ElTableColumn, ElForm, ElFormItem, ElInput, ElButton, ElMessage } from 'element-plus';
-  
-  export default {
-    components: {
-      ElTable, ElTableColumn, ElForm, ElFormItem, ElInput, ElButton, ElMessage
-    },
-    setup() {
-      const searchForm = ref({ idNumber: '' });
-      const loans = ref([]);
-  
-      const searchLoans = () => {
-        // 模拟贷款数据
-        const allLoans = [
-          { loan_id: 1, borrow_id: 101, card_id: 1001, officer_id: 201, amount: 50000, rate: 3.5, term: 36, status: 'application', date_applied: '2023-01-01', date_approved: '2023-01-05', form_id: 301, idNumber: '123456789012345678' },
-          { loan_id: 2, borrow_id: 102, card_id: 1002, officer_id: 202, amount: 75000, rate: 4.0, term: 48, status: 'repayment', date_applied: '2023-02-15', date_approved: '2023-02-20', form_id: 302, idNumber: '123456789012345679' },
-          { loan_id: 3, borrow_id: 103, card_id: 1003, officer_id: 203, amount: 30000, rate: 2.8, term: 24, status: 'settled', date_applied: '2023-03-10', date_approved: '2023-03-15', form_id: 303, idNumber: '123456789012345680' }
-        ];
-  
-        loans.value = allLoans.filter(loan => loan.idNumber === searchForm.value.idNumber);
-  
+  </div>
+</template>
+
+<script>
+import { ref } from 'vue';
+import { ElTable, ElTableColumn, ElForm, ElFormItem, ElInput, ElButton, ElMessage } from 'element-plus';
+import axios from 'axios';
+
+export default {
+  components: {
+    ElTable, ElTableColumn, ElForm, ElFormItem, ElInput, ElButton, ElMessage
+  },
+  setup() {
+    const searchForm = ref({ id_number: '' });
+    const loans = ref([]);
+    const currentPage = ref(1);
+    const pageSize = ref(10);
+    const totalLoans = ref(0);
+
+    const statusMap = {
+      application: '申请中',
+      repayment: '还款中',
+      declined: '已拒绝',
+      settled: '已还款',
+      overdue: '已逾期',
+    };
+
+    const getStatusText = (status) => {
+      return statusMap[status] || '未知状态';
+    };
+
+    const searchLoans = async () => {
+      try {
+        const formResponse = await axios.get(`/search-forms/${searchForm.value.id_number}`, {
+          params: {
+            page: currentPage.value,
+            pageSize: pageSize.value
+          }
+        });
+        const formsData = formResponse.data.records;
+
+        // 使用 map 将每个贷款的请求封装成 Promise
+        const loanPromises = formsData.map(async loan => {
+          try {
+            const loanResponse = await axios.get(`/search-loans/${loan.form_id}`);
+            return {
+              ...loan,
+              ...loanResponse.data
+            };
+          } catch (loanError) {
+            console.error(`获取贷款数据时发生错误: ${loanError}`);
+            ElMessage.error('无法加载贷款数据。');
+            // 请求失败时返回一个空对象或者其他合适的值
+            return {};
+          }
+        });
+
+        // 等待所有 Promise 完成并更新数据
+        loans.value = await Promise.all(loanPromises);
+        totalLoans.value = formResponse.data.total;
+
         if (loans.value.length === 0) {
           ElMessage.error('没有找到相关贷款记录');
         }
-      };
-  
-      return {
-        searchForm,
-        loans,
-        searchLoans
-      };
-    },
-    data() {
-      return {
-        loanHistory: [],
-        totalLoans: 0,
-        pageSize: 10,
-        currentPage: 1
-      };
-    },
-    methods:{
-      async searchLoans(id_number){
-        try {
-          const response = await this.$axios.get(`/search-forms/${id_number}`, {
-            params: {
-              page: this.currentPage,
-              pageSize: this.pageSize
-            }
-          });
-          this.loanHistory = response.data.records;
-          this.totalLoans = response.data.total;
-          // Log the total number of loans
-          console.log('Total Loans:', this.totalApprovals, this.loanHistory);
-          if(this.totalLoans == 0){  //0输出
-            ElMessage.error('没有找到相关贷款记录');
-          }
-        } catch (error) {
-          console.error('获取用户贷款历史时发生错误:', error);
-          ElMessage.error('无法加载用户贷款历史。');
-        }
+      } catch (error) {
+        console.error('获取用户贷款历史时发生错误:', error);
+        ElMessage.error('无法加载用户贷款历史。');
       }
-    }
-  };
-  </script>
+    };
+    const handlePageChange = (page) => {
+      currentPage.value = page;
+      searchLoans();
+    };
+
+    return {
+      searchForm,
+      loans,
+      searchLoans,
+      currentPage,
+      pageSize,
+      totalLoans,
+      handlePageChange,
+      getStatusText
+    };
+  }
+};
+</script>
   
   <style scoped>
   .user-loan-history-page {

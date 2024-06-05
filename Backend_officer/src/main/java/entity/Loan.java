@@ -1,4 +1,4 @@
-package com.example.loan.entity;
+package entity;
 
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -120,20 +120,6 @@ public class Loan {
         else if(type==4) this.status=LoanStatus.overdue;
         else this.status=null;
     }
-<<<<<<<< HEAD:Backedn_manager/src/main/java/com/example/loan/entity/Loan.java
-    public void setStatusstring() {
-        if(status==LoanStatus.application) this.statusstring="������";
-        else if(status==LoanStatus.declined) this.statusstring="����ʧ��";
-        else if(status==LoanStatus.repayment) this.statusstring="������";
-        else if(status==LoanStatus.settled) this.statusstring="�ѻ���";
-        else if(status==LoanStatus.overdue) this.statusstring="������";
-        else this.statusstring=null;
-    }
-    public String getStatusstring(){
-        return statusstring;
-    }
-========
->>>>>>>> a535a15013ffa518f64a69b4d434f9bd2aeaa238:Backend_manager/src/main/java/entity/Loan.java
     public LocalDate getDate_applied() {
         return date_applied;
     }
