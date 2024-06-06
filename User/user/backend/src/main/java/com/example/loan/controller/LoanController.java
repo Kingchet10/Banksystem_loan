@@ -2,12 +2,10 @@ package com.example.loan.controller;
 
 import com.example.loan.mapper.AmountMapper;
 import com.example.loan.mapper.AutoLoanMapper;
-import com.example.loan.mapper.ReportMapper;
 import com.example.loan.mapper.IdgetMapper;
 import com.example.loan.mapper.LoanApplyMapper;
 import entity.Loan;
-import entity.Report;
-
+import com.example.loan.service.CreditReportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,13 +25,11 @@ public class LoanController {
     @Autowired
     private IdgetMapper idgetMapper;
     @Autowired
-    private ReportMapper creditgetMapper;
+    private CreditReportService creditReportService;
     @Autowired
     private AutoLoanMapper  autoloanMapper;
     @Autowired
     private AmountMapper amountMapper;
-    @Autowired
-    private ReportMapper reportMapper;
 
     @PostMapping("/add-loan")
     public Map<String, Object> insertLoan(@RequestBody Loan loan) {
@@ -48,16 +44,7 @@ public class LoanController {
         loan.setDate_applied(LocalDate.now());
 
                                                                                         
-        Double credit=creditgetMapper.getCreditLimit(loan.getBorrow_id());  
-        if(credit==null){
-             Report report = new Report();
-            report.setUser_id(loan.getBorrow_id());
-            report.setCreditScore(100);
-            report.setCreditLimit(10000);
-            report.setDate(LocalDate.now());
-            reportMapper.insert(report);   
-            credit=10000.0;             
-        }
+        Double credit= creditReportService.calculateCreditLimit(loan.getBorrow_id());
         
         String permission;double rate;
         if(loan.getAmount()>100000) {permission="large";rate=0.03;}
