@@ -3,7 +3,6 @@ package com.example.loan;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.web.bind.annotation.CrossOrigin;
 
 
@@ -11,8 +10,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 // 优质的 spring/boot/data/security/cloud 框架中文文档尽在 => https://springdoc.cn
 @SpringBootApplication
 @MapperScan("com.example.loan.mapper")
-
-@CrossOrigin(origins = "*")
+@CrossOrigin
 public class Loan {
 
 	public static void main(String[] args) {

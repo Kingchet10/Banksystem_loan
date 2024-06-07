@@ -11,6 +11,7 @@ import axios from 'axios'
 const app = createApp(App)
 
 axios.defaults.baseURL = 'http://localhost:8080';
+
 axios.interceptors.request.use(config => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -32,6 +33,7 @@ axios.interceptors.response.use(response => {
     }
     return Promise.reject(error);
 });
+
 
 app.config.globalProperties.$axios = axios
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {

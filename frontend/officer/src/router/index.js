@@ -1,4 +1,3 @@
-
 import { createRouter, createWebHistory } from 'vue-router';
 import Login from '@/components/Login.vue';
 import Main from '@/components/Main.vue';
@@ -6,7 +5,7 @@ import LoanApproval from '@/components/LoanApproval.vue';
 import LoanHistory from '@/components/LoanHistory.vue';
 import LoanInquire from '@/components/LoanInquire.vue';
 import SecretKey from '@/components/changer.vue';
-//import { s } from 'vite/dist/node/types.d-jgA8ss1A';
+
 const routes = [
   {
     path: '/',
@@ -17,26 +16,31 @@ const routes = [
     path: '/main',
     name: 'Main',
     component: Main,
+    meta: { requiresAuth: true },
     children: [
       {
-        path: 'loan-approval',
+        path: 'add',
         name: 'LoanApproval',
-        component: LoanApproval
+        component: LoanApproval,
+        meta: { requiresAuth: true }
       },
       {
-        path: 'loan-history',
+        path: 'change1',
         name: 'LoanHistory',
-        component: LoanHistory
+        component: LoanHistory,
+        meta: { requiresAuth: true }
       },
       {
-        path: 'loan-inquire',
+        path: 'change2',
         name: 'LoanInquire',
-        component: LoanInquire
+        component: LoanInquire,
+        meta: { requiresAuth: true }
       },
       {
-        path: 'secret',
-        name: 'secret',
-        component: SecretKey
+        path: 'delete',
+        name: 'SecretKey',
+        component: SecretKey,
+        meta: { requiresAuth: true }
       }
     ]
   }
@@ -45,6 +49,21 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes
+});
+
+router.beforeEach((to, from, next) => {
+  const token = localStorage.getItem('token');
+  console.log(`Navigating to: ${to.name}, Token: ${token}`);
+  if (to.matched.some(record => record.meta.requiresAuth) && !token) {
+    console.log('No token found, redirecting to login...');
+    next({ name: 'Login' });
+  } else if (to.name === 'Main' && !from.name) {
+    // Prevent direct access to the main route
+    console.log('Direct access to main route is not allowed, redirecting to login...');
+    next({ name: 'Login' });
+  } else {
+    next();
+  }
 });
 
 export default router;

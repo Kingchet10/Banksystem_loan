@@ -1,16 +1,20 @@
 package com.example.loan.controller;
 
-
+import com.example.loan.Service.LoginService;
+import com.example.loan.Util.JwtUtil;
+import entity.Manager;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.loan.mapper.OfficerMapper;
+import com.example.loan.mapper.ManagerMapper;
 import entity.Officer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.HashMap;
 import java.util.List;
@@ -23,16 +27,41 @@ public class OfficerController {
 
     @Autowired
     private OfficerMapper officerMapper;
+    @Autowired
+    private LoginService managerService;
+    @Autowired
+    private JwtUtil jwtUtill;
 
     @PostMapping("/add-officer")
-    public String insertManager(@RequestBody Officer officer) {
+    public String insertManager(@RequestBody Officer officer, HttpServletRequest request) {
+
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return "Invalid token!";
+        }
+
+        String token = authHeader.substring(7);
+        String managerUsername;
+        try {
+            managerUsername = jwtUtill.getUsernameFromToken(token);
+        } catch (Exception e) {
+            return "Invalid token!";
+        }
+
+        Manager manager = managerService.findByUsername(managerUsername);
+        if (manager == null) {
+            return "Manager not found!";
+        }
+        Integer managerId = manager.getManager_id();
+        officer.setManager_id(managerId);
         int result = officerMapper.insert(officer);
         if (result > 0) {
-            return "Manager inserted successfully!";
+            return "Officer inserted successfully!";
         } else {
-            return "Failed to insert manager.";
+            return "Failed to insert officer.";
         }
     }
+
 
     @PutMapping("/update-officer-password")
     public String updateOfficerPassword(@RequestParam String username, @RequestParam String newPassword) {

@@ -16,31 +16,31 @@ const routes = [
     path: '/main',
     name: 'Main',
     component: Main,
-meta: { requiresAuth: true },
+    meta: { requiresAuth: true },
     children: [
       {
         path: 'add',
         name: 'LoanApproval',
         component: LoanApproval,
-    meta: { requiresAuth: true }
+        meta: { requiresAuth: true }
       },
       {
         path: 'change1',
         name: 'LoanHistory',
         component: LoanHistory,
-    meta: { requiresAuth: true }
+        meta: { requiresAuth: true }
       },
       {
         path: 'change2',
         name: 'LoanInquire',
         component: LoanInquire,
-    meta: { requiresAuth: true }
+        meta: { requiresAuth: true }
       },
       {
         path: 'delete',
         name: 'SecretKey',
         component: SecretKey,
-    meta: { requiresAuth: true }
+        meta: { requiresAuth: true }
       }
     ]
   }
@@ -51,10 +51,15 @@ const router = createRouter({
   routes
 });
 
-// 路由守卫
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token');
+  console.log(`Navigating to: ${to.name}, Token: ${token}`);
   if (to.matched.some(record => record.meta.requiresAuth) && !token) {
+    console.log('No token found, redirecting to login...');
+    next({ name: 'Login' });
+  } else if (to.name === 'Main' && !from.name) {
+    // Prevent direct access to the main route
+    console.log('Direct access to main route is not allowed, redirecting to login...');
     next({ name: 'Login' });
   } else {
     next();

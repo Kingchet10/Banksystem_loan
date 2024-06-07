@@ -53,6 +53,8 @@
               if (response.data.message === "登录成功") {
                 const token = response.data.token;
                 localStorage.setItem('token', token);
+                console.log(localStorage.getItem('token'));
+
                 console.log('登录成功');
                 this.$router.push('/main'); // 跳转到主页面
               } else {

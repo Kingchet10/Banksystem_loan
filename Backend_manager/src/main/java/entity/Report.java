@@ -1,4 +1,4 @@
-package com.example.loan.entity;
+package entity;
 
 import java.util.Date;
 

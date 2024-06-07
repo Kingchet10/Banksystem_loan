@@ -8,5 +8,5 @@ import org.apache.ibatis.annotations.Select;
 @Mapper
 public interface ManagerMapper extends BaseMapper<Manager> {
     @Select("SELECT * FROM manager WHERE username = #{username}")
-    Manager findByUsername(String username);
+     Manager findByUsername(String username);
 }
