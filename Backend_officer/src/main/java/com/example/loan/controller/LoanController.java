@@ -4,8 +4,13 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.example.loan.Service.LoginService;
+import com.example.loan.Util.JwtUtil;
 import com.example.loan.mapper.LoanMapper;
+import com.example.loan.mapper.OfficerMapper;
 import entity.Loan;
+import entity.Officer;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,9 +24,23 @@ public class LoanController {
 
     @Autowired
     private LoanMapper loanMapper;
+    @Autowired
+    private OfficerMapper officerMapper;
+    @Autowired
+    private LoginService officerService;
+    @Autowired
+    private JwtUtil jwtUtill;
 
-    @GetMapping("/get-loans/{officer_id}")
-    public IPage<Loan> getLoans(@PathVariable("officer_id") int officer_id,@RequestParam int page, @RequestParam int pageSize) {
+    @GetMapping("/get-loans")
+    public IPage<Loan> getLoans(@RequestParam int page, @RequestParam int pageSize, HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+
+        String token = authHeader.substring(7);
+        String officerUsername;
+        officerUsername = jwtUtill.getUsernameFromToken(token);
+        Officer officer = officerService.findByUsername(officerUsername);
+
+        int officer_id = officer.getOfficer_id();
         Page<Loan> loanPage = new Page<>(page, pageSize);
         return loanMapper.selectPage(loanPage, new QueryWrapper<Loan>().eq("status", "application").eq("officer_id", officer_id));
     }
@@ -50,8 +69,16 @@ public class LoanController {
         }
     }
 
-    @GetMapping("/get-approvals/{officer_id}")
-    public IPage<Loan> getApprovals(@PathVariable("officer_id") int officer_id,@RequestParam int page, @RequestParam int pageSize) {
+    @GetMapping("/get-approvals")
+    public IPage<Loan> getApprovals(@RequestParam int page, @RequestParam int pageSize, HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+
+        String token = authHeader.substring(7);
+        String officerUsername;
+        officerUsername = jwtUtill.getUsernameFromToken(token);
+        Officer officer = officerService.findByUsername(officerUsername);
+
+        int officer_id = officer.getOfficer_id();
         Page<Loan> loanPage = new Page<>(page, pageSize);
         return loanMapper.selectPage(loanPage, new QueryWrapper<Loan>().ne("status", "application").eq("officer_id",officer_id));
     }
