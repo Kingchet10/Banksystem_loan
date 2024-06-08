@@ -19,25 +19,25 @@ const routes = [
     meta: { requiresAuth: true },
     children: [
       {
-        path: 'add',
+        path: 'loan-approval',
         name: 'LoanApproval',
         component: LoanApproval,
         meta: { requiresAuth: true }
       },
       {
-        path: 'change1',
+        path: 'loan-history',
         name: 'LoanHistory',
         component: LoanHistory,
         meta: { requiresAuth: true }
       },
       {
-        path: 'change2',
+        path: 'loan-inquire',
         name: 'LoanInquire',
         component: LoanInquire,
         meta: { requiresAuth: true }
       },
       {
-        path: 'delete',
+        path: 'secret',
         name: 'SecretKey',
         component: SecretKey,
         meta: { requiresAuth: true }
