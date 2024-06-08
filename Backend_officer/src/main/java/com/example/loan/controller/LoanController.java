@@ -8,6 +8,7 @@ import com.example.loan.Service.LoginService;
 import com.example.loan.Util.JwtUtil;
 import com.example.loan.mapper.LoanMapper;
 import com.example.loan.mapper.OfficerMapper;
+import com.example.loan.Service.LoanApprovalService;
 import entity.Loan;
 import entity.Officer;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,6 +31,8 @@ public class LoanController {
     private LoginService officerService;
     @Autowired
     private JwtUtil jwtUtill;
+    @Autowired
+    private LoanApprovalService loanApprovalService;
 
     @GetMapping("/get-loans")
     public IPage<Loan> getLoans(@RequestParam int page, @RequestParam int pageSize, HttpServletRequest request) {
@@ -49,6 +52,7 @@ public class LoanController {
     public String approveLoan(@PathVariable("id") int loan_id) {
         UpdateWrapper<Loan> updateWrapper = new UpdateWrapper<>();
         updateWrapper.eq("loan_id", loan_id).set("status", "repayment").set("date_approved", LocalDate.now());
+        loanApprovalService.AddBalance(loanMapper.getCardId(loan_id), loanMapper.getAmount(loan_id));
         int result = loanMapper.update(null, updateWrapper);
         if (result > 0) {
             return "Loan approved successfully!";
