@@ -20,10 +20,10 @@ public class LoanController {
     @Autowired
     private LoanMapper loanMapper;
 
-    @GetMapping("/get-loans")
-    public IPage<Loan> getLoans(@RequestParam int page, @RequestParam int pageSize) {
+    @GetMapping("/get-loans/{officer_id}")
+    public IPage<Loan> getLoans(@PathVariable("officer_id") int officer_id,@RequestParam int page, @RequestParam int pageSize) {
         Page<Loan> loanPage = new Page<>(page, pageSize);
-        return loanMapper.selectPage(loanPage, new QueryWrapper<Loan>().eq("status", "application"));
+        return loanMapper.selectPage(loanPage, new QueryWrapper<Loan>().eq("status", "application").eq("officer_id", officer_id));
     }
 
     @PutMapping("/approve-loan/{id}")
@@ -50,10 +50,10 @@ public class LoanController {
         }
     }
 
-    @GetMapping("/get-approvals")
-    public IPage<Loan> getApprovals(@RequestParam int page, @RequestParam int pageSize) {
+    @GetMapping("/get-approvals/{officer_id}")
+    public IPage<Loan> getApprovals(@PathVariable("officer_id") int officer_id,@RequestParam int page, @RequestParam int pageSize) {
         Page<Loan> loanPage = new Page<>(page, pageSize);
-        return loanMapper.selectPage(loanPage, new QueryWrapper<Loan>().ne("status", "application"));
+        return loanMapper.selectPage(loanPage, new QueryWrapper<Loan>().ne("status", "application").eq("officer_id",officer_id));
     }
 
     @GetMapping("/search-loans/{form_id}")
